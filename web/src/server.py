@@ -1,3 +1,4 @@
+#from typing_extensions import Required
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.renderers import render_to_response
@@ -5,10 +6,19 @@ from pyramid.renderers import render_to_response
 import mysql.connector as mysql
 import os
 
+from flask import Flask, render_template
+from PIL import Image
+import base64
+import io
+
 db_user = os.environ['MYSQL_USER']
 db_pass = os.environ['MYSQL_PASSWORD']
 db_name = os.environ['MYSQL_DATABASE']
 db_host = os.environ['MYSQL_HOST']
+
+dirname = os.path.dirname(__file__)
+image_path = os.path.join(dirname, 'unknown_faces')
+i_listing = os.listdir(image_path)
 
 def get_home(req):
   # Connect to the database and retrieve the users
@@ -18,10 +28,44 @@ def get_home(req):
   records = cursor.fetchall()
   db.close()
 
-  return render_to_response('templates/home.html', {'users': records}, request=req)
+  return render_to_response('templates/protecc.html', {'users': records}, request=req)
+
+def trust_dir(req):
+  print("HERE\n")
+
+  l_img = get_latest_image(image_path)
+
+  print(l_img)
+  
+  im = Image.open(l_img)
+  data = io.BytesIO()
+  im.save(data, "JPEG")
+  encoded_img_data = base64.b64encode(data.getvalue())
+
+  print("AND HERE\n")
+
+  return render_to_response('templates/trust_dir.html', {"img": l_img}, request=req)
+  #return render_template("templates/trust_dir.html", img_data_t=encoded_img_data.decode('utf-8'))
+
+def get_latest_image(dirpath, valid_extensions=('jpg','jpeg','png')):
+    """
+    Get the latest image file in the given directory
+    """
+
+    # get filepaths of all files and dirs in the given dir
+    valid_files = [os.path.join(dirpath, filename) for filename in os.listdir(dirpath)]
+    # filter out directories, no-extension, and wrong extension files
+    valid_files = [f for f in valid_files if '.' in f and \
+        f.rsplit('.',1)[-1] in valid_extensions and os.path.isfile(f)]
+
+    if not valid_files:
+        raise ValueError("No valid images in %s" % dirpath)
+
+    return max(valid_files, key=os.path.getmtime) 
 
 ''' Route Configurations '''
 if __name__ == '__main__':
+  #app.run(host='0.0.0.0')
   config = Configurator()
 
   config.include('pyramid_jinja2')
@@ -29,6 +73,9 @@ if __name__ == '__main__':
 
   config.add_route('get_home', '/')
   config.add_view(get_home, route_name='get_home')
+
+  config.add_route('trust_dir', '/trust_dir')
+  config.add_view(trust_dir, route_name='trust_dir')
 
   config.add_static_view(name='/', path='./public', cache_max_age=3600)
 

@@ -7,6 +7,9 @@ RUN apt-get install libev-dev -y
 
 COPY ./src/requirements.txt /tmp
 RUN pip install -r /tmp/requirements.txt
+RUN pip install typing_extensions
+RUN pip install Flask
+RUN pip install Image
 
 WORKDIR /app
 
