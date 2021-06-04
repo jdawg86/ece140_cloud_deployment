@@ -21,20 +21,22 @@ image_path = os.path.join(dirname, 'public/unknown_faces')
 # i_listing = os.listdir(image_path)
 known_path = os.path.join(dirname, 'public/known_faces')
 motion_path = os.path.join(dirname, 'public/motion_cap')
+video_path = os.path.join(dirname, 'public/record_footage')
 n = pid = 0
 
 
-
+#path to home directory
 def get_home(req):
   # Connect to the database and retrieve the users
-  db = mysql.connect(host=db_host, database=db_name, user=db_user, passwd=db_pass)
-  cursor = db.cursor()
-  cursor.execute("select first_name, last_name, email from Users;")
-  records = cursor.fetchall()
-  db.close()
+  # db = mysql.connect(host=db_host, database=db_name, user=db_user, passwd=db_pass)
+  # cursor = db.cursor()
+  # cursor.execute("select first_name, last_name, email from Users;")
+  # records = cursor.fetchall()
+  # db.close()
 
-  return render_to_response('templates/protecc.html', {'users': records}, request=req)
+  return render_to_response('templates/protecc.html', [], request=req)
 
+#path to undetected people directory
 def unknown_dir(req):
   l_img = get_latest_image(image_path)
 
@@ -44,6 +46,7 @@ def unknown_dir(req):
 
   return render_to_response('templates/unknown_dir.html', {"img": l_img}, request=req)
 
+#path to trusted people directory
 def trust_dir(req):
 
   trusted_paths = get_all_image(known_path,"known_faces/")
@@ -52,6 +55,13 @@ def trust_dir(req):
 
   return render_to_response('templates/trust_dir.html', {"img": trusted_paths}, request=req)
 
+#path to videos directory
+def record_dir(req):
+  videos = get_all_video(video_path, "record_footage/")
+
+  return render_to_response('templates/record_dir.html', {"vid": videos}, request=req)
+
+#path to motion capture directory
 def motion_dir(req):
   l_img = get_latest_image(motion_path)
 
@@ -91,6 +101,20 @@ def get_all_image(dirpath, pre, valid_extensions=('.jpg','.jpeg','.png')):
 
   return images
 
+def get_all_video(dirpath, pre, valid_extensions=('.mp4')):
+  videos = list()
+
+
+  for f in os.listdir(dirpath):
+    ext = os.path.splitext(f)[1]
+    if ext.lower() not in valid_extensions:
+      continue
+    videos.append(os.path.join(pre,f))
+
+  print(videos)
+
+  return videos
+
 def start_algo(req):
   global n,pid
   n = os.fork()
@@ -108,9 +132,7 @@ def stop_algo(req):
 
   return render_to_response('templates/protecc.html', [], request=req)
 
-def record_dir(req):
 
-  return render_to_response('templates/record_dir.html', [], request=req)
 
 ''' Route Configurations '''
 if __name__ == '__main__':

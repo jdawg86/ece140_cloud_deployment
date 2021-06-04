@@ -15,4 +15,10 @@
         <input class = "return home" type = button onClick = "location.href = '/'" value='Return Home'>
       </div>
       <h1>Recorded Footage Directory</h1>
+      {% for v in vid %}
+      <tr>
+        <video src="{{v}}" controls>
+        </video>
+      </tr>
+      {% endfor %}
 </body>
