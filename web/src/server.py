@@ -17,7 +17,7 @@ db_name = os.environ['MYSQL_DATABASE']
 db_host = os.environ['MYSQL_HOST']
 
 dirname = os.path.dirname(__file__)
-image_path = os.path.join(dirname, 'unknown_faces')
+image_path = os.path.join(dirname, 'public/unknown_faces')
 i_listing = os.listdir(image_path)
 
 def get_home(req):
@@ -30,9 +30,7 @@ def get_home(req):
 
   return render_to_response('templates/protecc.html', {'users': records}, request=req)
 
-def trust_dir(req):
-  print("HERE\n")
-
+def unknown_dir(req):
   l_img = get_latest_image(image_path)
 
   print(l_img)
@@ -42,10 +40,15 @@ def trust_dir(req):
   im.save(data, "JPEG")
   encoded_img_data = base64.b64encode(data.getvalue())
 
-  print("AND HERE\n")
+  l_img = l_img.replace("public/", "")
 
-  return render_to_response('templates/trust_dir.html', {"img": l_img}, request=req)
-  #return render_template("templates/trust_dir.html", img_data_t=encoded_img_data.decode('utf-8'))
+  return render_to_response('templates/unknown_dir.html', {"img": l_img}, request=req)
+
+def trust_dir(req):
+
+  return render_to_response('templates/trust_dir.html')
+
+
 
 def get_latest_image(dirpath, valid_extensions=('jpg','jpeg','png')):
     """
@@ -74,8 +77,8 @@ if __name__ == '__main__':
   config.add_route('get_home', '/')
   config.add_view(get_home, route_name='get_home')
 
-  config.add_route('trust_dir', '/trust_dir')
-  config.add_view(trust_dir, route_name='trust_dir')
+  config.add_route('unknown_dir', '/unknown_dir')
+  config.add_view(unknown_dir, route_name='unknown_dir')
 
   config.add_static_view(name='/', path='./public', cache_max_age=3600)
 
