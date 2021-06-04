@@ -21,6 +21,8 @@ image_path = os.path.join(dirname, 'public/unknown_faces')
 # i_listing = os.listdir(image_path)
 known_path = os.path.join(dirname, 'public/known_faces')
 motion_path = os.path.join(dirname, 'public/motion_cap')
+n = pid = 0
+
 
 
 def get_home(req):
@@ -89,6 +91,27 @@ def get_all_image(dirpath, pre, valid_extensions=('.jpg','.jpeg','.png')):
 
   return images
 
+def start_algo(req):
+  global n,pid
+  n = os.fork()
+
+  if n <= 0:
+    pid = n
+    os.system('python3 hello.py')
+  
+  return render_to_response('templates/protecc.html', [], request=req)
+
+def stop_algo(req):
+  global pid
+
+  os.system('kill -2 ' + str(pid))
+
+  return render_to_response('templates/protecc.html', [], request=req)
+
+def record_dir(req):
+
+  return render_to_response('templates/record_dir.html', [], request=req)
+
 ''' Route Configurations '''
 if __name__ == '__main__':
   #app.run(host='0.0.0.0')
@@ -108,6 +131,15 @@ if __name__ == '__main__':
 
   config.add_route('trust_dir', '/trust_dir')
   config.add_view(trust_dir, route_name='trust_dir')
+
+  config.add_route('record_dir', '/record_dir')
+  config.add_view(record_dir, route_name='record_dir')
+
+  config.add_route('start_algo', '/start_algo')
+  config.add_view(start_algo, route_name='start_algo')
+
+  config.add_route('stop_algo', '/stop_algo')
+  config.add_view(stop_algo, route_name='stop_algo')
 
   config.add_static_view(name='/', path='./public', cache_max_age=3600)
 
