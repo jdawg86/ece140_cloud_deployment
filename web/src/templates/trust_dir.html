@@ -22,7 +22,19 @@
     <input class = "return home" type = button onClick = "location.href = '/';" value='Return Home'>
   </div>
   <h1>Trusted People Directory</h1>
-  {% for i in img[0] %}
+  <!-- {% for i in img %}
   <img id="picture" src="{{img}}">
-  {% endfor %}
+  {% endfor %} -->
+
+  <table class='margin-top-xl'>
+    <tbody>
+      {% for i in img %}
+      <tr>
+        <img id="picture" src="{{i}}" height=300>
+        <p>{{i}}</p>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
 </body>

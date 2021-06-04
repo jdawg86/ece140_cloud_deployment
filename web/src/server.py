@@ -18,7 +18,10 @@ db_host = os.environ['MYSQL_HOST']
 
 dirname = os.path.dirname(__file__)
 image_path = os.path.join(dirname, 'public/unknown_faces')
-i_listing = os.listdir(image_path)
+# i_listing = os.listdir(image_path)
+known_path = os.path.join(dirname, 'public/known_faces')
+motion_path = os.path.join(dirname, 'public/motion_cap')
+
 
 def get_home(req):
   # Connect to the database and retrieve the users
@@ -35,20 +38,26 @@ def unknown_dir(req):
 
   print(l_img)
   
-  im = Image.open(l_img)
-  data = io.BytesIO()
-  im.save(data, "JPEG")
-  encoded_img_data = base64.b64encode(data.getvalue())
-
   l_img = l_img.replace("public/", "")
 
   return render_to_response('templates/unknown_dir.html', {"img": l_img}, request=req)
 
 def trust_dir(req):
 
-  return render_to_response('templates/trust_dir.html')
+  trusted_paths = get_all_image(known_path,"known_faces/")
 
+  print(trusted_paths)
 
+  return render_to_response('templates/trust_dir.html', {"img": trusted_paths}, request=req)
+
+def motion_dir(req):
+  l_img = get_latest_image(motion_path)
+
+  print(l_img)
+  
+  l_img = l_img.replace("public/", "")
+
+  return render_to_response('templates/motion_dir.html', {"img": l_img}, request=req)
 
 def get_latest_image(dirpath, valid_extensions=('jpg','jpeg','png')):
     """
@@ -64,7 +73,21 @@ def get_latest_image(dirpath, valid_extensions=('jpg','jpeg','png')):
     if not valid_files:
         raise ValueError("No valid images in %s" % dirpath)
 
-    return max(valid_files, key=os.path.getmtime) 
+    return max(valid_files, key=os.path.getmtime)
+
+def get_all_image(dirpath, pre, valid_extensions=('.jpg','.jpeg','.png')):
+  images = list()
+
+
+  for f in os.listdir(dirpath):
+    ext = os.path.splitext(f)[1]
+    if ext.lower() not in valid_extensions:
+      continue
+    images.append(os.path.join(pre,f))
+
+  print(images)
+
+  return images
 
 ''' Route Configurations '''
 if __name__ == '__main__':
@@ -79,6 +102,12 @@ if __name__ == '__main__':
 
   config.add_route('unknown_dir', '/unknown_dir')
   config.add_view(unknown_dir, route_name='unknown_dir')
+
+  config.add_route('motion_dir', '/motion_dir')
+  config.add_view(motion_dir, route_name='motion_dir')
+
+  config.add_route('trust_dir', '/trust_dir')
+  config.add_view(trust_dir, route_name='trust_dir')
 
   config.add_static_view(name='/', path='./public', cache_max_age=3600)
 
